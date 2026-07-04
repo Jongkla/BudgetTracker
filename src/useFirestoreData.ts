@@ -22,14 +22,18 @@ export function useFirestoreData() {
     const rentRef = collection(db, `users/${user.uid}/rentEntries`);
     const rentUnsub = onSnapshot(query(rentRef), (snapshot) => {
       const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as RentEntry));
-      data.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+      data.sort((a, b) => {
+        const p = (a.periodCovered || '').localeCompare(b.periodCovered || '');
+        if (p !== 0) return p;
+        return (a.datePaid || '').localeCompare(b.datePaid || '');
+      });
       setRentEntries(data);
     });
 
     const utilRef = collection(db, `users/${user.uid}/utilityEntries`);
     const utilUnsub = onSnapshot(query(utilRef), (snapshot) => {
       const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as UtilityEntry));
-      data.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+      data.sort((a, b) => (a.month || '').localeCompare(b.month || ''));
       setUtilityEntries(data);
     });
 
@@ -39,7 +43,7 @@ export function useFirestoreData() {
       data.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
       data.forEach(log => {
         if (log.entries) {
-          log.entries.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+          log.entries.sort((a, b) => (a.dueDate || '').localeCompare(b.dueDate || ''));
         }
       });
       setCustomLogs(data);
