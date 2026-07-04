@@ -1,0 +1,89 @@
+{
+  "rules": {
+    "version": "2",
+    "services": {
+      "firestore": {
+        "match /databases/{database}/documents": {
+          "match /users/{userId}": {
+            "allow read, write": "if request.auth != null && request.auth.uid == userId;",
+            "match /rentEntries/{entryId}": {
+              "allow read, write": "if request.auth != null && request.auth.uid == userId;"
+            },
+            "match /utilityEntries/{entryId}": {
+              "allow read, write": "if request.auth != null && request.auth.uid == userId;"
+            },
+            "match /customLogs/{logId}": {
+              "allow read, write": "if request.auth != null && request.auth.uid == userId;"
+            }
+          }
+        }
+      }
+    }
+  },
+  "schema": {
+    "users": {
+      "type": "collection",
+      "fields": {
+        "email": {
+          "type": "string"
+        }
+      },
+      "subcollections": {
+        "rentEntries": {
+          "type": "collection",
+          "fields": {
+            "datePaid": {
+              "type": "string"
+            },
+            "periodCovered": {
+              "type": "string"
+            },
+            "rentAmount": {
+              "type": "number"
+            },
+            "totalPaid": {
+              "type": "number"
+            }
+          }
+        },
+        "utilityEntries": {
+          "type": "collection",
+          "fields": {
+            "month": {
+              "type": "string"
+            },
+            "previousReading": {
+              "type": "number"
+            },
+            "presentReading": {
+              "type": "number"
+            },
+            "kwhUsed": {
+              "type": "number"
+            },
+            "costPerKwh": {
+              "type": "number"
+            },
+            "totalCost": {
+              "type": "number"
+            },
+            "amountPaid": {
+              "type": "number"
+            }
+          }
+        },
+        "customLogs": {
+          "type": "collection",
+          "fields": {
+            "title": {
+              "type": "string"
+            },
+            "entries": {
+              "type": "array"
+            }
+          }
+        }
+      }
+    }
+  }
+}
