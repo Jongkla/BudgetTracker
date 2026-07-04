@@ -67,13 +67,13 @@ export function UtilityLog({ entries, onAddEntry, onDeleteEntry }: Props) {
         <table className="w-full text-left text-xs border-collapse">
           <thead className="bg-white/5 text-slate-300 border-b border-white/10">
             <tr>
-              <th className="p-4 font-medium">Month</th>
-              <th className="p-4 font-medium">Readings (Pres/Prev)</th>
-              <th className="p-4 font-medium text-right">KWH Used</th>
-              <th className="p-4 font-medium text-right">Cost/KWH</th>
-              <th className="p-4 font-medium text-right">Total Cost</th>
-              <th className="p-4 font-medium text-right">Amount Paid</th>
-              <th className="p-4 font-medium text-right">Remaining Bal</th>
+              <th className="p-4 font-medium min-w-[140px]">Month</th>
+              <th className="p-4 font-medium min-w-[160px]">Readings (Pres/Prev)</th>
+              <th className="p-4 font-medium text-right min-w-[90px]">KWH Used</th>
+              <th className="p-4 font-medium text-right min-w-[110px]">Cost/KWH</th>
+              <th className="p-4 font-medium text-right min-w-[120px]">Total Cost</th>
+              <th className="p-4 font-medium text-right min-w-[120px]">Amount Paid</th>
+              <th className="p-4 font-medium text-right min-w-[150px]">Remaining Bal</th>
               <th className="p-4 font-medium w-10"></th>
             </tr>
           </thead>

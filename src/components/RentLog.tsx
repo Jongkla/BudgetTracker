@@ -53,11 +53,11 @@ export function RentLog({ entries, onAddEntry, onDeleteEntry }: Props) {
         <table className="w-full text-left text-xs border-collapse">
           <thead className="bg-white/5 text-slate-300 border-b border-white/10">
             <tr>
-              <th className="p-4 font-medium">Date Paid</th>
-              <th className="p-4 font-medium">Period Covered</th>
-              <th className="p-4 font-medium text-right">Rent Amount</th>
-              <th className="p-4 font-medium text-right">Total Paid</th>
-              <th className="p-4 font-medium text-right">Remaining Bal</th>
+              <th className="p-4 font-medium min-w-[140px]">Date Paid</th>
+              <th className="p-4 font-medium min-w-[140px]">Period Covered</th>
+              <th className="p-4 font-medium text-right min-w-[120px]">Rent Amount</th>
+              <th className="p-4 font-medium text-right min-w-[120px]">Total Paid</th>
+              <th className="p-4 font-medium text-right min-w-[150px]">Remaining Bal</th>
               <th className="p-4 font-medium w-10"></th>
             </tr>
           </thead>

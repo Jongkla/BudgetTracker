@@ -96,7 +96,7 @@ export default function App() {
         <div className="absolute bottom-[-10%] left-[20%] w-[60%] h-[60%] bg-zinc-900/50 rounded-full blur-[120px]" />
       </div>
 
-      <div className="relative z-10 p-4 sm:p-8 max-w-6xl mx-auto flex flex-col h-full">
+      <div className="relative z-10 p-4 sm:p-8 w-full max-w-[1600px] mx-auto flex flex-col h-full">
         <motion.header 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -140,13 +140,12 @@ export default function App() {
 
         <PropertyOverview details={propertyDetails} />
         
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 flex-1 mt-8">
-          <div className="xl:col-span-8 flex flex-col gap-8">
-            <RentLog entries={rentEntries} onAddEntry={(entry) => addRentEntry(entry)} onDeleteEntry={deleteRentEntry} />
-            <UtilityLog entries={utilityEntries} onAddEntry={(entry) => addUtilityEntry(entry)} onDeleteEntry={deleteUtilityEntry} />
-          </div>
+        <div className="flex flex-col gap-10 flex-1 mt-8">
+          <RentLog entries={rentEntries} onAddEntry={(entry) => addRentEntry(entry)} onDeleteEntry={deleteRentEntry} />
           
-          <div className="xl:col-span-4 flex flex-col gap-6">
+          <UtilityLog entries={utilityEntries} onAddEntry={(entry) => addUtilityEntry(entry)} onDeleteEntry={deleteUtilityEntry} />
+          
+          <div className="flex flex-col gap-6 mt-4">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -171,19 +170,21 @@ export default function App() {
                 No custom expense logs. Click "Add Log" to create one.
               </motion.div>
             ) : (
-              customLogs.map((log, index) => (
-                <CustomLog 
-                  key={log.id}
-                  logId={log.id}
-                  title={log.title}
-                  entries={log.entries}
-                  onAddEntry={addCustomEntry}
-                  onDeleteEntry={deleteCustomEntry}
-                  onUpdateTitle={updateCustomLogTitle}
-                  onDeleteLog={deleteCustomLog}
-                  index={index}
-                />
-              ))
+              <div className="flex flex-col gap-8">
+                {customLogs.map((log, index) => (
+                  <CustomLog 
+                    key={log.id}
+                    logId={log.id}
+                    title={log.title}
+                    entries={log.entries}
+                    onAddEntry={addCustomEntry}
+                    onDeleteEntry={deleteCustomEntry}
+                    onUpdateTitle={updateCustomLogTitle}
+                    onDeleteLog={deleteCustomLog}
+                    index={index}
+                  />
+                ))}
+              </div>
             )}
           </div>
         </div>
