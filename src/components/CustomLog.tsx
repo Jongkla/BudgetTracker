@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { BillEntry } from '../types';
-import { formatCurrency } from '../utils';
+import { formatCurrency, formatDate } from '../utils';
 import { Trash2, Edit2, Check, X } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -191,7 +191,7 @@ export function CustomLog({ logId, title, entries, onAddEntry, onDeleteEntry, on
               return (
               <tr key={entry.id} className="hover:bg-white/10 transition-colors group">
                 <td className="p-4 text-slate-200">{entry.billName}</td>
-                <td className="p-4 text-slate-300">{entry.dueDate}</td>
+                <td className="p-4 text-slate-300">{formatDate(entry.dueDate)}</td>
                 <td className="p-4 text-right">{formatCurrency(entry.amount)}</td>
                 <td className="p-4 text-right text-white font-semibold drop-shadow-sm">{formatCurrency(entry.amountPaid)}</td>
                 <td className="p-4 text-right text-slate-300 font-semibold">{formatCurrency(remaining)}</td>

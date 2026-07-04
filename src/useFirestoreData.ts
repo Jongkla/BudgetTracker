@@ -22,18 +22,26 @@ export function useFirestoreData() {
     const rentRef = collection(db, `users/${user.uid}/rentEntries`);
     const rentUnsub = onSnapshot(query(rentRef), (snapshot) => {
       const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as RentEntry));
+      data.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
       setRentEntries(data);
     });
 
     const utilRef = collection(db, `users/${user.uid}/utilityEntries`);
     const utilUnsub = onSnapshot(query(utilRef), (snapshot) => {
       const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as UtilityEntry));
+      data.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
       setUtilityEntries(data);
     });
 
     const logsRef = collection(db, `users/${user.uid}/customLogs`);
     const logsUnsub = onSnapshot(query(logsRef), (snapshot) => {
       const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as CustomLogData));
+      data.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+      data.forEach(log => {
+        if (log.entries) {
+          log.entries.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+        }
+      });
       setCustomLogs(data);
     });
 
@@ -46,7 +54,7 @@ export function useFirestoreData() {
 
   const addRentEntry = async (entry: Omit<RentEntry, 'id'>) => {
     if (!user) return;
-    await addDoc(collection(db, `users/${user.uid}/rentEntries`), entry);
+    await addDoc(collection(db, `users/${user.uid}/rentEntries`), { ...entry, createdAt: Date.now() });
   };
 
   const deleteRentEntry = async (id: string) => {
@@ -61,7 +69,7 @@ export function useFirestoreData() {
 
   const addUtilityEntry = async (entry: Omit<UtilityEntry, 'id'>) => {
     if (!user) return;
-    await addDoc(collection(db, `users/${user.uid}/utilityEntries`), entry);
+    await addDoc(collection(db, `users/${user.uid}/utilityEntries`), { ...entry, createdAt: Date.now() });
   };
 
   const deleteUtilityEntry = async (id: string) => {
@@ -78,7 +86,8 @@ export function useFirestoreData() {
     if (!user) return;
     await addDoc(collection(db, `users/${user.uid}/customLogs`), {
       title: 'New Expense Log',
-      entries: []
+      entries: [],
+      createdAt: Date.now()
     });
   };
 
@@ -98,7 +107,7 @@ export function useFirestoreData() {
     if (!user) return;
     const log = customLogs.find(l => l.id === logId);
     if (log) {
-      const newEntry = { ...entry, id: crypto.randomUUID() };
+      const newEntry = { ...entry, id: crypto.randomUUID(), createdAt: Date.now() };
       await updateDoc(doc(db, `users/${user.uid}/customLogs/${logId}`), {
         entries: [...log.entries, newEntry]
       });

@@ -10,6 +10,7 @@ export interface RentEntry {
   periodCovered: string;
   rentAmount: number;
   totalPaid: number;
+  createdAt?: number;
 }
 
 export interface UtilityEntry {
@@ -21,6 +22,7 @@ export interface UtilityEntry {
   costPerKwh: number;
   totalCost: number;
   amountPaid: number;
+  createdAt?: number;
 }
 
 export interface BillEntry {
@@ -29,10 +31,12 @@ export interface BillEntry {
   dueDate: string;
   amount: number;
   amountPaid: number;
+  createdAt?: number;
 }
 
 export interface CustomLogData {
   id: string;
   title: string;
   entries: BillEntry[];
+  createdAt?: number;
 }

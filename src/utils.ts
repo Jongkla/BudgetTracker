@@ -7,6 +7,36 @@ export function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
+export function formatDate(dateStr: string): string {
+  if (!dateStr) return '';
+  try {
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      const [year, month, day] = parts;
+      const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    return dateStr;
+  } catch (e) {
+    return dateStr;
+  }
+}
+
+export function formatMonth(monthStr: string): string {
+  if (!monthStr) return '';
+  try {
+    const parts = monthStr.split('-');
+    if (parts.length >= 2) {
+      const [year, month] = parts;
+      const date = new Date(parseInt(year), parseInt(month) - 1);
+      return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    }
+    return monthStr;
+  } catch (e) {
+    return monthStr;
+  }
+}
+
 export function exportToCSV(rentEntries: RentEntry[], utilityEntries: UtilityEntry[], customLogs: CustomLogData[]) {
   let csvContent = "data:text/csv;charset=utf-8,";
 

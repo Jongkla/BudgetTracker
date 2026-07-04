@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { UtilityEntry } from '../types';
-import { formatCurrency } from '../utils';
+import { formatCurrency, formatMonth } from '../utils';
 import { Calendar, Trash2, Edit2, Check, X } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -189,7 +189,7 @@ export function UtilityLog({ entries, onAddEntry, onDeleteEntry, onUpdateEntry }
               const remaining = entry.totalCost - (entry.amountPaid || 0);
               return (
               <tr key={entry.id} className="hover:bg-white/10 transition-colors group">
-                <td className="p-4 text-slate-200">{entry.month}</td>
+                <td className="p-4 text-slate-200">{formatMonth(entry.month)}</td>
                 <td className="p-4 text-slate-300">
                   {entry.presentReading} / {entry.previousReading}
                 </td>

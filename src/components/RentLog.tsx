@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { RentEntry } from '../types';
-import { formatCurrency } from '../utils';
+import { formatCurrency, formatDate, formatMonth } from '../utils';
 import { Calendar, Trash2, Edit2, Check, X } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -144,8 +144,8 @@ export function RentLog({ entries, onAddEntry, onDeleteEntry, onUpdateEntry }: P
               const remaining = entry.rentAmount - entry.totalPaid;
               return (
               <tr key={entry.id} className="hover:bg-white/10 transition-colors group">
-                <td className="p-4 text-slate-300">{entry.datePaid}</td>
-                <td className="p-4 text-slate-200">{entry.periodCovered}</td>
+                <td className="p-4 text-slate-300">{formatDate(entry.datePaid)}</td>
+                <td className="p-4 text-slate-200">{formatMonth(entry.periodCovered)}</td>
                 <td className="p-4 text-right">{formatCurrency(entry.rentAmount)}</td>
                 <td className="p-4 text-right text-white font-semibold drop-shadow-sm">{formatCurrency(entry.totalPaid)}</td>
                 <td className="p-4 text-right text-slate-300 font-semibold">{formatCurrency(remaining)}</td>
