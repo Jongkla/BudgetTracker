@@ -54,6 +54,11 @@ export function useFirestoreData() {
     await deleteDoc(doc(db, `users/${user.uid}/rentEntries/${id}`));
   };
 
+  const updateRentEntry = async (id: string, updates: Partial<RentEntry>) => {
+    if (!user) return;
+    await updateDoc(doc(db, `users/${user.uid}/rentEntries/${id}`), updates);
+  };
+
   const addUtilityEntry = async (entry: Omit<UtilityEntry, 'id'>) => {
     if (!user) return;
     await addDoc(collection(db, `users/${user.uid}/utilityEntries`), entry);
@@ -62,6 +67,11 @@ export function useFirestoreData() {
   const deleteUtilityEntry = async (id: string) => {
     if (!user) return;
     await deleteDoc(doc(db, `users/${user.uid}/utilityEntries/${id}`));
+  };
+
+  const updateUtilityEntry = async (id: string, updates: Partial<UtilityEntry>) => {
+    if (!user) return;
+    await updateDoc(doc(db, `users/${user.uid}/utilityEntries/${id}`), updates);
   };
 
   const addCustomLog = async () => {
@@ -95,6 +105,16 @@ export function useFirestoreData() {
     }
   };
 
+  const updateCustomEntry = async (logId: string, entryId: string, updates: Partial<BillEntry>) => {
+    if (!user) return;
+    const log = customLogs.find(l => l.id === logId);
+    if (log) {
+      await updateDoc(doc(db, `users/${user.uid}/customLogs/${logId}`), {
+        entries: log.entries.map(e => e.id === entryId ? { ...e, ...updates } : e)
+      });
+    }
+  };
+
   const deleteCustomEntry = async (logId: string, entryId: string) => {
     if (!user) return;
     const log = customLogs.find(l => l.id === logId);
@@ -113,12 +133,15 @@ export function useFirestoreData() {
     customLogs,
     addRentEntry,
     deleteRentEntry,
+    updateRentEntry,
     addUtilityEntry,
     deleteUtilityEntry,
+    updateUtilityEntry,
     addCustomLog,
     deleteCustomLog,
     updateCustomLogTitle,
     addCustomEntry,
+    updateCustomEntry,
     deleteCustomEntry
   };
 }

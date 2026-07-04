@@ -1,20 +1,24 @@
 import React, { useState } from 'react';
 import { RentEntry } from '../types';
 import { formatCurrency } from '../utils';
-import { Calendar, Trash2 } from 'lucide-react';
+import { Calendar, Trash2, Edit2, Check, X } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface Props {
   entries: RentEntry[];
   onAddEntry: (entry: RentEntry) => void;
   onDeleteEntry: (id: string) => void;
+  onUpdateEntry: (id: string, updates: Partial<RentEntry>) => void;
 }
 
-export function RentLog({ entries, onAddEntry, onDeleteEntry }: Props) {
+export function RentLog({ entries, onAddEntry, onDeleteEntry, onUpdateEntry }: Props) {
   const [datePaid, setDatePaid] = useState('');
   const [periodCovered, setPeriodCovered] = useState('');
   const [rentAmount, setRentAmount] = useState('4000');
   const [totalPaid, setTotalPaid] = useState('');
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editData, setEditData] = useState<Partial<RentEntry>>({});
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,6 +35,26 @@ export function RentLog({ entries, onAddEntry, onDeleteEntry }: Props) {
     setPeriodCovered('');
     setRentAmount('4000');
     setTotalPaid('');
+  };
+
+  const startEditing = (entry: RentEntry) => {
+    setEditingId(entry.id);
+    setEditData(entry);
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    setEditData({});
+  };
+
+  const saveEditing = (id: string) => {
+    onUpdateEntry(id, {
+      ...editData,
+      rentAmount: typeof editData.rentAmount === 'string' ? parseFloat(editData.rentAmount) || 0 : editData.rentAmount,
+      totalPaid: typeof editData.totalPaid === 'string' ? parseFloat(editData.totalPaid) || 0 : editData.totalPaid,
+    });
+    setEditingId(null);
+    setEditData({});
   };
 
   const currentRentAmount = parseFloat(rentAmount) || 0;
@@ -58,11 +82,65 @@ export function RentLog({ entries, onAddEntry, onDeleteEntry }: Props) {
               <th className="p-4 font-medium text-right min-w-[120px]">Rent Amount</th>
               <th className="p-4 font-medium text-right min-w-[120px]">Total Paid</th>
               <th className="p-4 font-medium text-right min-w-[150px]">Remaining Bal</th>
-              <th className="p-4 font-medium w-10"></th>
+              <th className="p-4 font-medium w-16 text-center">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/10 font-mono text-[11px]">
             {entries.map((entry) => {
+              if (editingId === entry.id) {
+                const editRentAmount = typeof editData.rentAmount === 'string' ? parseFloat(editData.rentAmount) || 0 : (editData.rentAmount || 0);
+                const editTotalPaid = typeof editData.totalPaid === 'string' ? parseFloat(editData.totalPaid) || 0 : (editData.totalPaid || 0);
+                const editRemaining = editRentAmount - editTotalPaid;
+                
+                return (
+                  <tr key={entry.id} className="bg-white/5 transition-colors">
+                    <td className="p-2">
+                      <input
+                        type="date"
+                        value={editData.datePaid || ''}
+                        onChange={(e) => setEditData({ ...editData, datePaid: e.target.value })}
+                        className="w-full p-2 bg-black/20 border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <input
+                        type="month"
+                        value={editData.periodCovered || ''}
+                        onChange={(e) => setEditData({ ...editData, periodCovered: e.target.value })}
+                        className="w-full p-2 bg-black/20 border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <input
+                        type="number"
+                        value={editData.rentAmount ?? ''}
+                        onChange={(e) => setEditData({ ...editData, rentAmount: e.target.value as any })}
+                        className="w-full p-2 bg-black/20 border border-white/10 rounded-lg text-white text-right focus:outline-none focus:border-white/30"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <input
+                        type="number"
+                        value={editData.totalPaid ?? ''}
+                        onChange={(e) => setEditData({ ...editData, totalPaid: e.target.value as any })}
+                        className="w-full p-2 bg-black/20 border border-white/10 rounded-lg text-white text-right focus:outline-none focus:border-white/30"
+                      />
+                    </td>
+                    <td className="p-4 text-right text-slate-300 font-semibold">{formatCurrency(editRemaining)}</td>
+                    <td className="p-2 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <button onClick={() => saveEditing(entry.id)} className="text-emerald-400 hover:text-emerald-300 p-1">
+                          <Check className="w-4 h-4" />
+                        </button>
+                        <button onClick={cancelEditing} className="text-slate-400 hover:text-slate-300 p-1">
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              }
+
               const remaining = entry.rentAmount - entry.totalPaid;
               return (
               <tr key={entry.id} className="hover:bg-white/10 transition-colors group">
@@ -71,14 +149,23 @@ export function RentLog({ entries, onAddEntry, onDeleteEntry }: Props) {
                 <td className="p-4 text-right">{formatCurrency(entry.rentAmount)}</td>
                 <td className="p-4 text-right text-white font-semibold drop-shadow-sm">{formatCurrency(entry.totalPaid)}</td>
                 <td className="p-4 text-right text-slate-300 font-semibold">{formatCurrency(remaining)}</td>
-                <td className="p-4 text-right">
-                  <button 
-                    onClick={() => onDeleteEntry(entry.id)}
-                    className="text-white/40 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all duration-200"
-                    title="Delete entry"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                <td className="p-4 text-center">
+                  <div className="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button 
+                      onClick={() => startEditing(entry)}
+                      className="text-white/40 hover:text-blue-400 transition-colors"
+                      title="Edit entry"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => onDeleteEntry(entry.id)}
+                      className="text-white/40 hover:text-red-400 transition-colors"
+                      title="Delete entry"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             )})}

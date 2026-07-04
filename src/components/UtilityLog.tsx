@@ -1,21 +1,25 @@
 import React, { useState } from 'react';
 import { UtilityEntry } from '../types';
 import { formatCurrency } from '../utils';
-import { Calendar, Trash2 } from 'lucide-react';
+import { Calendar, Trash2, Edit2, Check, X } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface Props {
   entries: UtilityEntry[];
   onAddEntry: (entry: UtilityEntry) => void;
   onDeleteEntry: (id: string) => void;
+  onUpdateEntry: (id: string, updates: Partial<UtilityEntry>) => void;
 }
 
-export function UtilityLog({ entries, onAddEntry, onDeleteEntry }: Props) {
+export function UtilityLog({ entries, onAddEntry, onDeleteEntry, onUpdateEntry }: Props) {
   const [month, setMonth] = useState('');
   const [prevReading, setPrevReading] = useState('');
   const [presReading, setPresReading] = useState('');
   const [costPerKwh, setCostPerKwh] = useState('');
   const [amountPaid, setAmountPaid] = useState('');
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editData, setEditData] = useState<Partial<UtilityEntry>>({});
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,6 +50,37 @@ export function UtilityLog({ entries, onAddEntry, onDeleteEntry }: Props) {
     setAmountPaid('');
   };
 
+  const startEditing = (entry: UtilityEntry) => {
+    setEditingId(entry.id);
+    setEditData(entry);
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    setEditData({});
+  };
+
+  const saveEditing = (id: string) => {
+    const prev = typeof editData.previousReading === 'string' ? parseFloat(editData.previousReading) || 0 : editData.previousReading || 0;
+    const pres = typeof editData.presentReading === 'string' ? parseFloat(editData.presentReading) || 0 : editData.presentReading || 0;
+    const cost = typeof editData.costPerKwh === 'string' ? parseFloat(editData.costPerKwh) || 0 : editData.costPerKwh || 0;
+    const paid = typeof editData.amountPaid === 'string' ? parseFloat(editData.amountPaid) || 0 : editData.amountPaid || 0;
+    const kwhUsed = Math.max(0, pres - prev);
+    const totalCost = kwhUsed * cost;
+
+    onUpdateEntry(id, {
+      ...editData,
+      previousReading: prev,
+      presentReading: pres,
+      costPerKwh: cost,
+      amountPaid: paid,
+      kwhUsed,
+      totalCost,
+    });
+    setEditingId(null);
+    setEditData({});
+  };
+
   const parsedPrev = parseFloat(prevReading) || 0;
   const parsedPres = parseFloat(presReading) || 0;
   const parsedCost = parseFloat(costPerKwh) || 0;
@@ -74,11 +109,83 @@ export function UtilityLog({ entries, onAddEntry, onDeleteEntry }: Props) {
               <th className="p-4 font-medium text-right min-w-[120px]">Total Cost</th>
               <th className="p-4 font-medium text-right min-w-[120px]">Amount Paid</th>
               <th className="p-4 font-medium text-right min-w-[150px]">Remaining Bal</th>
-              <th className="p-4 font-medium w-10"></th>
+              <th className="p-4 font-medium w-16 text-center">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/10 font-mono text-[11px]">
             {entries.map((entry) => {
+              if (editingId === entry.id) {
+                const prev = typeof editData.previousReading === 'string' ? parseFloat(editData.previousReading) || 0 : editData.previousReading || 0;
+                const pres = typeof editData.presentReading === 'string' ? parseFloat(editData.presentReading) || 0 : editData.presentReading || 0;
+                const cost = typeof editData.costPerKwh === 'string' ? parseFloat(editData.costPerKwh) || 0 : editData.costPerKwh || 0;
+                const paid = typeof editData.amountPaid === 'string' ? parseFloat(editData.amountPaid) || 0 : editData.amountPaid || 0;
+                const kwhUsed = Math.max(0, pres - prev);
+                const totalCost = kwhUsed * cost;
+                
+                return (
+                  <tr key={entry.id} className="bg-white/5 transition-colors">
+                    <td className="p-2">
+                      <input
+                        type="month"
+                        value={editData.month || ''}
+                        onChange={(e) => setEditData({ ...editData, month: e.target.value })}
+                        className="w-full p-2 bg-black/20 border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="number"
+                          value={editData.presentReading ?? ''}
+                          onChange={(e) => setEditData({ ...editData, presentReading: e.target.value as any })}
+                          className="w-16 p-2 bg-black/20 border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30"
+                          step="0.1"
+                        />
+                        <span className="text-slate-400">/</span>
+                        <input
+                          type="number"
+                          value={editData.previousReading ?? ''}
+                          onChange={(e) => setEditData({ ...editData, previousReading: e.target.value as any })}
+                          className="w-16 p-2 bg-black/20 border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30"
+                          step="0.1"
+                        />
+                      </div>
+                    </td>
+                    <td className="p-4 text-right text-slate-300 font-semibold">{kwhUsed.toFixed(1)}</td>
+                    <td className="p-2">
+                      <input
+                        type="number"
+                        value={editData.costPerKwh ?? ''}
+                        onChange={(e) => setEditData({ ...editData, costPerKwh: e.target.value as any })}
+                        className="w-full p-2 bg-black/20 border border-white/10 rounded-lg text-white text-right focus:outline-none focus:border-white/30"
+                        step="0.01"
+                      />
+                    </td>
+                    <td className="p-4 text-right text-slate-300 font-semibold">{formatCurrency(totalCost)}</td>
+                    <td className="p-2">
+                      <input
+                        type="number"
+                        value={editData.amountPaid ?? ''}
+                        onChange={(e) => setEditData({ ...editData, amountPaid: e.target.value as any })}
+                        className="w-full p-2 bg-black/20 border border-white/10 rounded-lg text-white text-right focus:outline-none focus:border-white/30"
+                        step="0.01"
+                      />
+                    </td>
+                    <td className="p-4 text-right text-slate-300 font-semibold">{formatCurrency(totalCost - paid)}</td>
+                    <td className="p-2 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <button onClick={() => saveEditing(entry.id)} className="text-emerald-400 hover:text-emerald-300 p-1">
+                          <Check className="w-4 h-4" />
+                        </button>
+                        <button onClick={cancelEditing} className="text-slate-400 hover:text-slate-300 p-1">
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              }
+
               const remaining = entry.totalCost - (entry.amountPaid || 0);
               return (
               <tr key={entry.id} className="hover:bg-white/10 transition-colors group">
@@ -91,14 +198,23 @@ export function UtilityLog({ entries, onAddEntry, onDeleteEntry }: Props) {
                 <td className="p-4 text-right text-white font-semibold drop-shadow-sm">{formatCurrency(entry.totalCost)}</td>
                 <td className="p-4 text-right text-white font-semibold drop-shadow-sm">{formatCurrency(entry.amountPaid || 0)}</td>
                 <td className="p-4 text-right text-slate-300 font-semibold">{formatCurrency(remaining)}</td>
-                <td className="p-4 text-right">
-                  <button 
-                    onClick={() => onDeleteEntry(entry.id)}
-                    className="text-white/40 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all duration-200"
-                    title="Delete entry"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                <td className="p-4 text-center">
+                  <div className="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button 
+                      onClick={() => startEditing(entry)}
+                      className="text-white/40 hover:text-blue-400 transition-colors"
+                      title="Edit entry"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => onDeleteEntry(entry.id)}
+                      className="text-white/40 hover:text-red-400 transition-colors"
+                      title="Delete entry"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             )})}

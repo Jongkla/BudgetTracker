@@ -25,12 +25,15 @@ export default function App() {
     customLogs,
     addRentEntry,
     deleteRentEntry,
+    updateRentEntry,
     addUtilityEntry,
     deleteUtilityEntry,
+    updateUtilityEntry,
     addCustomLog,
     deleteCustomLog,
     updateCustomLogTitle,
     addCustomEntry,
+    updateCustomEntry,
     deleteCustomEntry
   } = useFirestoreData();
 
@@ -141,9 +144,9 @@ export default function App() {
         <PropertyOverview details={propertyDetails} />
         
         <div className="flex flex-col gap-10 flex-1 mt-8">
-          <RentLog entries={rentEntries} onAddEntry={(entry) => addRentEntry(entry)} onDeleteEntry={deleteRentEntry} />
+          <RentLog entries={rentEntries} onAddEntry={(entry) => addRentEntry(entry)} onDeleteEntry={deleteRentEntry} onUpdateEntry={updateRentEntry} />
           
-          <UtilityLog entries={utilityEntries} onAddEntry={(entry) => addUtilityEntry(entry)} onDeleteEntry={deleteUtilityEntry} />
+          <UtilityLog entries={utilityEntries} onAddEntry={(entry) => addUtilityEntry(entry)} onDeleteEntry={deleteUtilityEntry} onUpdateEntry={updateUtilityEntry} />
           
           <div className="flex flex-col gap-6 mt-4">
             <motion.div 
@@ -179,6 +182,7 @@ export default function App() {
                     entries={log.entries}
                     onAddEntry={addCustomEntry}
                     onDeleteEntry={deleteCustomEntry}
+                    onUpdateEntry={updateCustomEntry}
                     onUpdateTitle={updateCustomLogTitle}
                     onDeleteLog={deleteCustomLog}
                     index={index}

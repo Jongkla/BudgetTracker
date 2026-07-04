@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { BillEntry } from '../types';
 import { formatCurrency } from '../utils';
-import { Trash2, Edit2, Check } from 'lucide-react';
+import { Trash2, Edit2, Check, X } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface Props {
@@ -10,18 +10,22 @@ interface Props {
   entries: BillEntry[];
   onAddEntry: (logId: string, entry: BillEntry) => void;
   onDeleteEntry: (logId: string, entryId: string) => void;
+  onUpdateEntry: (logId: string, entryId: string, updates: Partial<BillEntry>) => void;
   onUpdateTitle: (logId: string, newTitle: string) => void;
   onDeleteLog: (logId: string) => void;
   index: number;
 }
 
-export function CustomLog({ logId, title, entries, onAddEntry, onDeleteEntry, onUpdateTitle, onDeleteLog, index }: Props) {
+export function CustomLog({ logId, title, entries, onAddEntry, onDeleteEntry, onUpdateEntry, onUpdateTitle, onDeleteLog, index }: Props) {
   const [billName, setBillName] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [amount, setAmount] = useState('');
   const [amountPaid, setAmountPaid] = useState('');
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editTitle, setEditTitle] = useState(title);
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editData, setEditData] = useState<Partial<BillEntry>>({});
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,6 +47,26 @@ export function CustomLog({ logId, title, entries, onAddEntry, onDeleteEntry, on
   const handleSaveTitle = () => {
     onUpdateTitle(logId, editTitle || 'Custom Log');
     setIsEditingTitle(false);
+  };
+
+  const startEditing = (entry: BillEntry) => {
+    setEditingId(entry.id);
+    setEditData(entry);
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+    setEditData({});
+  };
+
+  const saveEditing = (entryId: string) => {
+    onUpdateEntry(logId, entryId, {
+      ...editData,
+      amount: typeof editData.amount === 'string' ? parseFloat(editData.amount) || 0 : editData.amount,
+      amountPaid: typeof editData.amountPaid === 'string' ? parseFloat(editData.amountPaid) || 0 : editData.amountPaid,
+    });
+    setEditingId(null);
+    setEditData({});
   };
 
   const currentAmount = parseFloat(amount) || 0;
@@ -102,11 +126,67 @@ export function CustomLog({ logId, title, entries, onAddEntry, onDeleteEntry, on
               <th className="p-4 font-medium text-right min-w-[110px]">Amount</th>
               <th className="p-4 font-medium text-right min-w-[110px]">Amount Paid</th>
               <th className="p-4 font-medium text-right min-w-[140px]">Remaining Bal</th>
-              <th className="p-4 font-medium w-10"></th>
+              <th className="p-4 font-medium w-16 text-center">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/10 font-mono text-[11px]">
             {entries.map((entry) => {
+              if (editingId === entry.id) {
+                const editAmt = typeof editData.amount === 'string' ? parseFloat(editData.amount) || 0 : (editData.amount || 0);
+                const editPaid = typeof editData.amountPaid === 'string' ? parseFloat(editData.amountPaid) || 0 : (editData.amountPaid || 0);
+                const editRemaining = editAmt - editPaid;
+                
+                return (
+                  <tr key={entry.id} className="bg-white/5 transition-colors">
+                    <td className="p-2">
+                      <input
+                        type="text"
+                        value={editData.billName || ''}
+                        onChange={(e) => setEditData({ ...editData, billName: e.target.value })}
+                        className="w-full p-2 bg-black/20 border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <input
+                        type="date"
+                        value={editData.dueDate || ''}
+                        onChange={(e) => setEditData({ ...editData, dueDate: e.target.value })}
+                        className="w-full p-2 bg-black/20 border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <input
+                        type="number"
+                        value={editData.amount ?? ''}
+                        onChange={(e) => setEditData({ ...editData, amount: e.target.value as any })}
+                        className="w-full p-2 bg-black/20 border border-white/10 rounded-lg text-white text-right focus:outline-none focus:border-white/30"
+                        step="0.01"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <input
+                        type="number"
+                        value={editData.amountPaid ?? ''}
+                        onChange={(e) => setEditData({ ...editData, amountPaid: e.target.value as any })}
+                        className="w-full p-2 bg-black/20 border border-white/10 rounded-lg text-white text-right focus:outline-none focus:border-white/30"
+                        step="0.01"
+                      />
+                    </td>
+                    <td className="p-4 text-right text-slate-300 font-semibold">{formatCurrency(editRemaining)}</td>
+                    <td className="p-2 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <button onClick={() => saveEditing(entry.id)} className="text-emerald-400 hover:text-emerald-300 p-1">
+                          <Check className="w-4 h-4" />
+                        </button>
+                        <button onClick={cancelEditing} className="text-slate-400 hover:text-slate-300 p-1">
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              }
+
               const remaining = entry.amount - entry.amountPaid;
               return (
               <tr key={entry.id} className="hover:bg-white/10 transition-colors group">
@@ -115,14 +195,23 @@ export function CustomLog({ logId, title, entries, onAddEntry, onDeleteEntry, on
                 <td className="p-4 text-right">{formatCurrency(entry.amount)}</td>
                 <td className="p-4 text-right text-white font-semibold drop-shadow-sm">{formatCurrency(entry.amountPaid)}</td>
                 <td className="p-4 text-right text-slate-300 font-semibold">{formatCurrency(remaining)}</td>
-                <td className="p-4 text-right">
-                  <button 
-                    onClick={() => onDeleteEntry(logId, entry.id)}
-                    className="text-white/40 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all duration-200"
-                    title="Delete entry"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                <td className="p-4 text-center">
+                  <div className="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button 
+                      onClick={() => startEditing(entry)}
+                      className="text-white/40 hover:text-blue-400 transition-colors"
+                      title="Edit entry"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => onDeleteEntry(logId, entry.id)}
+                      className="text-white/40 hover:text-red-400 transition-colors"
+                      title="Delete entry"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             )})}
